@@ -20,7 +20,7 @@ No file-size limit beyond GitHub's (2 GB per asset).
 
 1. In Unity, open **Window → Package Manager**.
 2. Click the **+** button in the top-left → **Add package from git URL…**
-3. Paste the repo URL, e.g. `https://github.com/<owner>/BuildUploader.git`.
+3. Paste the repo URL, e.g. `https://github.com/squidypal/Github-Unity-Build-Uploader.git`.
 
 ### Via local path
 
