@@ -125,5 +125,3 @@ Stored in `EditorPrefs`:
 | `GitHubBuildUploader.Enabled` | bool | Master on/off |
 | `GitHubBuildUploader.GitHubToken` | string | Personal access token |
 | `GitHubBuildUploader.GitHubRepo` | string | `owner/name` slug |
-
-If you used an earlier build of this tool that stored values under `DiscordBuildUploader.*` keys, they are migrated automatically the first time the script runs.
