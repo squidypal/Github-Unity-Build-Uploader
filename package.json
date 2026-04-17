@@ -1,0 +1,19 @@
+{
+  "name": "com.squidypal.build-uploader",
+  "version": "1.0.0",
+  "displayName": "Build Uploader",
+  "description": "Zips Unity player builds on success and uploads them as GitHub release assets. Configure via Tools > Build Uploader.",
+  "unity": "2022.3",
+  "author": {
+    "name": "squidypal"
+  },
+  "keywords": [
+    "editor",
+    "build",
+    "github",
+    "release",
+    "ci",
+    "automation"
+  ],
+  "category": "Editor"
+}
