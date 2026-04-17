@@ -47,7 +47,7 @@ Add this to your project's `Packages/manifest.json` under `"dependencies"`:
 
 3. **Fill in:**
    - **Enabled** — tick this.
-   - **GitHub Repo (owner/name)** — e.g. `vfs-sct/GD80PG29PR-Mosasaurus-Unity`. Just the slug, not a URL.
+   - **GitHub Repo (owner/name)** — e.g. `squidypal/Github-Unity-Build-Uploader`. Just the slug, not a URL.
    - **GitHub Token** — paste the PAT.
 
 Settings are stored in Unity's per-user `EditorPrefs`, not in the project — every teammate configures their own.
