@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
@@ -17,11 +18,26 @@ namespace BuildUploader.Editor
     {
         public const string EnabledKey = "GitHubBuildUploader.Enabled";
         public const string GitHubTokenKey = "GitHubBuildUploader.GitHubToken";
-        public const string GitHubRepoKey = "GitHubBuildUploader.GitHubRepo";
+        private const string GitHubRepoKeyBase = "GitHubBuildUploader.GitHubRepo";
 
         private const string LegacyEnabledKey = "DiscordBuildUploader.Enabled";
         private const string LegacyTokenKey = "DiscordBuildUploader.GitHubToken";
         private const string LegacyRepoKey = "DiscordBuildUploader.GitHubRepo";
+
+        public static string GitHubRepoKey => GitHubRepoKeyBase + "." + ProjectId;
+
+        private static string ProjectId
+        {
+            get
+            {
+                string dataPath = Application.dataPath ?? string.Empty;
+                using (var sha = SHA1.Create())
+                {
+                    byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(dataPath));
+                    return BitConverter.ToString(hash, 0, 8).Replace("-", string.Empty);
+                }
+            }
+        }
 
         public int callbackOrder => 0;
 
@@ -31,8 +47,16 @@ namespace BuildUploader.Editor
                 EditorPrefs.SetBool(EnabledKey, EditorPrefs.GetBool(LegacyEnabledKey, false));
             if (!EditorPrefs.HasKey(GitHubTokenKey) && EditorPrefs.HasKey(LegacyTokenKey))
                 EditorPrefs.SetString(GitHubTokenKey, EditorPrefs.GetString(LegacyTokenKey, string.Empty));
-            if (!EditorPrefs.HasKey(GitHubRepoKey) && EditorPrefs.HasKey(LegacyRepoKey))
-                EditorPrefs.SetString(GitHubRepoKey, EditorPrefs.GetString(LegacyRepoKey, string.Empty));
+
+            // Repo is per-project. Fall back to the old global key (Discord or GitHub) once so
+            // existing setups are carried forward into this project's slot.
+            if (!EditorPrefs.HasKey(GitHubRepoKey))
+            {
+                if (EditorPrefs.HasKey(GitHubRepoKeyBase))
+                    EditorPrefs.SetString(GitHubRepoKey, EditorPrefs.GetString(GitHubRepoKeyBase, string.Empty));
+                else if (EditorPrefs.HasKey(LegacyRepoKey))
+                    EditorPrefs.SetString(GitHubRepoKey, EditorPrefs.GetString(LegacyRepoKey, string.Empty));
+            }
         }
 
         public void OnPostprocessBuild(BuildReport report)
