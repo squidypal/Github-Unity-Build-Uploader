@@ -113,35 +113,39 @@ namespace BuildUploader.Editor
             string tagName = $"build-{report.summary.platform}-{timestamp}";
             string releaseName = $"{PlayerSettings.productName} {report.summary.platform} ({timestamp})";
 
-            try
-            {
-                if (File.Exists(zipPath))
-                    File.Delete(zipPath);
+            Debug.Log($"[BuildUploader] Packaging and uploading in background: {releaseName}. You can keep using the editor; closing Unity will abort the upload.");
 
-                ZipFile.CreateFromDirectory(buildDirectory, zipPath, CompressionLevel.Optimal, false);
-
-                FileInfo zipInfo = new FileInfo(zipPath);
-                long zipLen = zipInfo.Length;
-
-                var task = Task.Run(() => UploadAsync(githubToken, githubRepo, tagName, releaseName, zipPath, zipLen));
-                task.Wait();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[BuildUploader] Failed to package or upload build: {ex.Message}");
-            }
-            finally
+            // Fire-and-forget: zip + upload run on a background thread so the editor stays responsive.
+            _ = Task.Run(async () =>
             {
                 try
                 {
                     if (File.Exists(zipPath))
                         File.Delete(zipPath);
+
+                    ZipFile.CreateFromDirectory(buildDirectory, zipPath, CompressionLevel.Optimal, false);
+
+                    long zipLen = new FileInfo(zipPath).Length;
+
+                    await UploadAsync(githubToken, githubRepo, tagName, releaseName, zipPath, zipLen).ConfigureAwait(false);
                 }
-                catch (Exception cleanupEx)
+                catch (Exception ex)
                 {
-                    Debug.LogWarning($"[BuildUploader] Failed to delete temp zip '{zipPath}': {cleanupEx.Message}");
+                    Debug.LogError($"[BuildUploader] Failed to package or upload build: {ex.Message}");
                 }
-            }
+                finally
+                {
+                    try
+                    {
+                        if (File.Exists(zipPath))
+                            File.Delete(zipPath);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        Debug.LogWarning($"[BuildUploader] Failed to delete temp zip '{zipPath}': {cleanupEx.Message}");
+                    }
+                }
+            });
         }
 
         private static async Task UploadAsync(
